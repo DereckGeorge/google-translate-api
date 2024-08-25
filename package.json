@@ -1,0 +1,15 @@
+{
+  "name": "google-translate-api",
+  "version": "1.0.0",
+  "description": "a simple translator using google translate api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dereck Tano",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/translate": "^8.5.0",
+    "dotenv": "^16.4.5"
+  }
+}
