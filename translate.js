@@ -1,5 +1,6 @@
 const {Translate} = require('@google-cloud/translate').v2;
 require('dotenv').config();
+const languageMap = require('./languageMap');
 
 // Load credentials from the environment variable
 let CREDENTIALS;
@@ -28,8 +29,9 @@ const translateText = async (text, targetLanguage) => {
 const detectLanguage = async (text) => {
     try {
         const detection = await translate.detect(text);
-   //   console.log('Full Detection Response:', detection); // uncomment to see the full JSON response
-        return detection[0].language;
+        const languageCode = detection[0].language;
+        const languageName = languageMap[languageCode] || languageCode;
+        return languageName;
     } catch (error) {
         console.error(`Error at detectLanguage --> ${error}`);
         return null;
@@ -37,11 +39,8 @@ const detectLanguage = async (text) => {
 };
 
 detectLanguage('Unaitwa nani')
-    .then((language) => {
-        if (language=='sw') // You can just remove this if condition 
-        console.log('Detected Language:', 'swahili language');
-        else 
-        console.log('Detected Language:', language); // and just log this
+    .then((languageName) => {
+        console.log('Detected Language:', languageName);
     })
     .catch((err) => console.error(err)
     );
