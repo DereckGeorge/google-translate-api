@@ -1,8 +1,9 @@
+const express = require('express');
+const bodyParser = require('body-parser');
 const {Translate} = require('@google-cloud/translate').v2;
 require('dotenv').config();
 const languageMap = require('./languageMap');
 
-// Load credentials from the environment variable
 let CREDENTIALS;
 try {
     CREDENTIALS = JSON.parse(process.env.CREDENTIALS);
@@ -11,44 +12,39 @@ try {
     process.exit(1);
 }
 
-// Configuration for the client
 const translate = new Translate({
     credentials: CREDENTIALS,
     projectId: CREDENTIALS.project_id
 });
-const translateText = async (text, targetLanguage) => {
+
+const app = express();
+app.use(bodyParser.json());
+
+app.post('/translate', async(req, res)=>{
+    const {text, targetLanguage} = req.body;
     try {
         const [translation] = await translate.translate(text, targetLanguage);
-        return translation;
+        res.json({translation});
     } catch (error) {
         console.error(`Error at translateText --> ${error}`);
-        return null;
+        res.status(500).json({ error: 'Translation failed' });
     }
-};
+});
 
-const detectLanguage = async (text) => {
+app.post('/detect', async (req, res) => {
+    const { text } = req.body;
     try {
         const detection = await translate.detect(text);
         const languageCode = detection[0].language;
         const languageName = languageMap[languageCode] || languageCode;
-        return languageName;
+        res.json({ languageName });
     } catch (error) {
-        console.error(`Error at detectLanguage --> ${error}`);
-        return null;
+        console.error('Error at detectLanguage -->', error);
+        res.status(500).json({ error: 'Language detection failed' });
     }
-};
+});
 
-detectLanguage('Unaitwa nani')
-    .then((languageName) => {
-        console.log('Detected Language:', languageName);
-    })
-    .catch((err) => console.error(err)
-    );
-
-translateText('Unaitwa nani kijana', 'en')
-    .then((translation) => {
-        console.log(translation);
-    })
-    .catch((err) => console.error(err)
-    );
-
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
